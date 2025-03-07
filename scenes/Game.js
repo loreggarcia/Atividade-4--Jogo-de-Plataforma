@@ -16,22 +16,27 @@ class Game extends Phaser.Scene {
 
   preload() {
     //carregando as imagens
-    this.load.image("sky", "assets/bg2.png"); //background céu
+    this.load.image("bg2", "assets/bg2.png"); 
+    //obstáculos
     this.load.image("computador", "assets/download-removebg-preview.png");
-    this.load.image("chao", "assets/platform1234.png"); //chao
-    this.load.image("cafe", "assets/platform2.png"); //café
-    this.load.image("Jim", "assets/platform1.png"); //Jim
-    this.load.image("calculadora", "assets/platform3.png"); //calculadora
+    this.load.image("chao", "assets/platform1234.png"); 
+    this.load.image("cafe", "assets/platform2.png"); 
+    this.load.image("Jim", "assets/platform1.png"); 
+    this.load.image("calculadora", "assets/platform3.png");
+    //Item coletável 
     this.load.image("gelatin", "assets/star.png");
-    this.load.image("bomb", "assets/Michael.png"); //bombas
+    //Vilão
+    this.load.image("bomba", "assets/Michael.png"); 
+    //Sprite de Dwight
     this.load.spritesheet("dwight", "assets/Dwight.png", {
-      frameWidth: 117, //largura
-      frameHeight: 235, //altura
+      frameWidth: 117, //largura da sprite
+      frameHeight: 235, //altura da sprite
     });
   }
 
   create() {
-    this.add.image(400, 300, "sky");
+    //adicionando fundo
+    this.add.image(400, 300, "bg2");
 
     //plataforma
     plataforms = this.physics.add.staticGroup(); //mantém estatico o objeto plataforma
@@ -47,9 +52,10 @@ class Game extends Phaser.Scene {
 
     //player
     player = this.physics.add.sprite(100, 450, "dwight");
-    player.setBounce(0.2);
-    player.setCollideWorldBounds(true);
+    player.setBounce(0.2); //Efeito de quique
+    player.setCollideWorldBounds(true); //Não pode sair da tela
     player.setScale(0.35);
+    player.body.setSize(100,200) //Ajusta a hitbox
 
     //personagem vai para a esquerda
     this.anims.create({
@@ -92,15 +98,21 @@ class Game extends Phaser.Scene {
       repeat: 11,
       setXY: { x: 12, y: 0, stepX: 70 },
     });
-
     gelatins.children.iterate(function (child) {
       child.setScale(0.15);
-      child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+      child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8)); //efeito de quique
+      child.body.setSize(100,200) //ajuste da hitbox
     });
+     
+    /* NOTA: Overlap e Collider:
+    Collider: Aplica a colisão
+    Overlap: Detecta a sobreposição*/
+
     //adiciona uma relação de colisão entre 2 objetos: jogador e plataforma
     this.physics.add.collider(gelatins, plataforms);
     //verificar se o player encostou na estrela
     this.physics.add.overlap(player, gelatins, this.collectGelatin, null, this);
+
     //bomba
     this.bombs = this.physics.add.group();
     this.physics.add.collider(this.bombs, plataforms);
@@ -132,57 +144,62 @@ class Game extends Phaser.Scene {
       player.anims.play("turn");
     }
 
-    //Se apertar o botão para cima
-    if (cursors.up.isDown && player.body.touching.down) {
+    //Se o personagem estiver no chão e apertar o botão para cima o personagem pula 
+    if (cursors.up.isDown && player.body.touching.down) { 
       player.setVelocityY(-330); //vai para cima
     }
   }
-  //coletar
-  hitBomb(player, bomb) {
-    this.physics.pause();
-
-    player.setTint(0xff0000); //player fica vermelho
-
-    player.anims.play("turn");
-
-    gameOver = true;
-    this.time.delayedCall(1500, () => {
-      //Tempo da cena + espera
-      if ((gameOver = true)) {
-        this.scene.stop("gamer"); // Fecha a cena de GameOver
-        this.scene.start("gameover"); // Reinicia a cena 'game'
-      }
-    });
-  }
 
   collectGelatin(player, gelatin) {
-    gelatin.disableBody(true, true);
+    gelatin.disableBody(true, true); //desativa o corpo da gelatina e torna ela invisível(desapaece do jogo)
 
-    score += 10;
+    //Pontuação
+    score += 1;
     scoreText.setText("Pontuação: " + score);
 
-    // Criando grupo de bombas corretamente
+    // Criando grupo de bombas 
     this.bombs = this.physics.add.group();
 
     // Colisão entre bombas e plataformas
     this.physics.add.collider(this.bombs, plataforms);
     this.physics.add.collider(player, this.bombs, this.hitBomb, null, this);
 
-    // Função para quando o jogador coletar todas as estrelas
+    // Se todas as gelatinas forem coletadas:
     if (gelatins.countActive(true) === 0) {
       gelatins.children.iterate(function (child) {
-        child.enableBody(true, child.x, 0, true, true);
+    // Reativa a física, estabelece nova posição da gelatina, garante que gelatina fique vísivel e ativa novamente
+        child.enableBody(true, child.x, 0, true, true); //reinicia gelatina
       });
 
+
       var x =
-        player.x < 400
-          ? Phaser.Math.Between(400, 800)
-          : Phaser.Math.Between(0, 400);
-      var bomb = this.bombs.create(x, 16, "bomb"); // Criando bomba dentro do grupo
-      bomb.setBounce(1);
-      bomb.setCollideWorldBounds(true);
-      bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        player.x < 400 //Se jogador estiver a esquerda (400 = Centro da tela no eixo x)
+          ? Phaser.Math.Between(400, 800) //Entre 400 e 800(DIREITA)
+          : Phaser.Math.Between(0, 400); //Entre 0 e 400(ESQUERDA)
+        // Criando bomba dentro do grupo  
+      var bomb = this.bombs.create(x, 16, "bomb"); 
+      bomb.body.setSize(150,150)
+      bomb.setBounce(1); //coeficiente de quique 
+      bomb.setCollideWorldBounds(true);//não pode sair da tela
+      bomb.setVelocity(Phaser.Math.Between(-200, 200), 20); //velocidade no eixo x(ida e volta), velocidade eixo y(descida)
       bomb.setScale(0.13);
     }
+  }
+
+  //Se o personagem colidir com uma bomba:  
+  hitBomb(player, bomb) {
+    this.physics.pause(); //Jogo pausa
+
+    player.setTint(0xff0000); //Jogador fica vermelho
+
+    player.anims.play("turn"); //Jogador fica de frente
+
+    gameOver = true;
+    this.time.delayedCall(1500, () => {
+      //Tempo da cena + espera
+      if ((gameOver = true)) {
+        this.scene.start("gameover"); // Inicia a cena 'gameover'
+      }
+    });
   }
 }
