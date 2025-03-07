@@ -18,15 +18,15 @@ class Game extends Phaser.Scene {
     //carregando as imagens
     this.load.image("bg2", "assets/bg2.png"); 
     //obstáculos
-    this.load.image("computador", "assets/download-removebg-preview.png");
-    this.load.image("chao", "assets/platform1234.png"); 
+    this.load.image("computador", "assets/platform4.png");
+    this.load.image("chao", "assets/platform5.png"); 
     this.load.image("cafe", "assets/platform2.png"); 
     this.load.image("Jim", "assets/platform1.png"); 
     this.load.image("calculadora", "assets/platform3.png");
     //Item coletável 
     this.load.image("gelatin", "assets/star.png");
     //Vilão
-    this.load.image("bomba", "assets/Michael.png"); 
+    this.load.image("bomb", "assets/Michael.png"); 
     //Sprite de Dwight
     this.load.spritesheet("dwight", "assets/Dwight.png", {
       frameWidth: 117, //largura da sprite
@@ -104,7 +104,7 @@ class Game extends Phaser.Scene {
       child.body.setSize(100,200) //ajuste da hitbox
     });
      
-    /* NOTA: Overlap e Collider:
+    /* NOTA: Overlap x Collider:
     Collider: Aplica a colisão
     Overlap: Detecta a sobreposição*/
 
@@ -151,40 +151,28 @@ class Game extends Phaser.Scene {
   }
 
   collectGelatin(player, gelatin) {
-    gelatin.disableBody(true, true); //desativa o corpo da gelatina e torna ela invisível(desapaece do jogo)
-
-    //Pontuação
-    score += 1;
+    gelatin.disableBody(true, true); // Desativa a gelatina coletada
+    score += 10;
     scoreText.setText("Pontuação: " + score);
-
-    // Criando grupo de bombas 
-    this.bombs = this.physics.add.group();
-
-    // Colisão entre bombas e plataformas
-    this.physics.add.collider(this.bombs, plataforms);
-    this.physics.add.collider(player, this.bombs, this.hitBomb, null, this);
-
-    // Se todas as gelatinas forem coletadas:
+  
     if (gelatins.countActive(true) === 0) {
+      // Reativa todas as gelatinas
       gelatins.children.iterate(function (child) {
-    // Reativa a física, estabelece nova posição da gelatina, garante que gelatina fique vísivel e ativa novamente
-        child.enableBody(true, child.x, 0, true, true); //reinicia gelatina
+        child.enableBody(true, child.x, 0, true, true);
       });
-
-
-      var x =
-        player.x < 400 //Se jogador estiver a esquerda (400 = Centro da tela no eixo x)
-          ? Phaser.Math.Between(400, 800) //Entre 400 e 800(DIREITA)
-          : Phaser.Math.Between(0, 400); //Entre 0 e 400(ESQUERDA)
-        // Criando bomba dentro do grupo  
-      var bomb = this.bombs.create(x, 16, "bomb"); 
-      bomb.body.setSize(150,150)
-      bomb.setBounce(1); //coeficiente de quique 
-      bomb.setCollideWorldBounds(true);//não pode sair da tela
-      bomb.setVelocity(Phaser.Math.Between(-200, 200), 20); //velocidade no eixo x(ida e volta), velocidade eixo y(descida)
-      bomb.setScale(0.13);
-    }
-  }
+  
+      // Cria múltiplas bombas usando um loop for
+      for (let i = 0; i < 2; i++) { 
+        var x = player.x < 400 //Cria uma limitação sobre o centro do eixo X (O objeto está na direita)
+        ? Phaser.Math.Between(400, 800) // Sim: Vai para DIREITA
+        : Phaser.Math.Between(0, 400); // NãoVai para ESQUERDA
+        var bomb = this.bombs.create(x, 16, "bomb");
+        bomb.setBounce(1);
+        bomb.setCollideWorldBounds(true);
+        bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        bomb.setScale(0.13);
+      }
+    } }
 
   //Se o personagem colidir com uma bomba:  
   hitBomb(player, bomb) {

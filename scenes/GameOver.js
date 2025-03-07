@@ -25,10 +25,12 @@ class GameOver extends Phaser.Scene {
       restartButton.setScale(0.37);
     });
 
+    // Efeito ao passar o mouse sobre o botão: RETORNA AO TAMANHO ORIGINAL
     restartButton.on("pointerout", () => {
       restartButton.setScale(0.35);
     });
 
+    
     restartButton.on("pointerdown", () => {
       this.scene.stop("gameover"); // Fecha a cena de GameOver
       this.scene.start("game"); // Reinicia a cena 'game'
