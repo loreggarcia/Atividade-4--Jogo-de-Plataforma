@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>The office: Dwight's game</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.23.0/dist/phaser.js"></script>
+    <script src="scenes/Game.js"></script>
+    <script src="scenes/Start.js"></script>
+    <script src="scenes/GameOver.js"></script>
+    <script src="scenes/Cutscene.js"></script>
+
+    <style>
+      body {
+        /*remove margens do body*/
+        margin-top: 1px;
+        padding: 0;
+      }
+
+      canvas {
+        /*adiciona uma borda preta*/
+        border: 1px solid #000000;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="game"></div>
+
+    <script type="text/javascript">
+      const config = {
+        type: Phaser.AUTO,
+        scale: {
+          mode: Phaser.Scale.FIT,
+        },
+        autoCenter: Phaser.Scale.CENTER,
+        width: 800, //largura da tela do jogo
+        height: 600, //altura da tela do jogo
+        //backgroundColor: '#39addd',
+        physics: {
+          default: "arcade",
+          arcade: {
+            gravity: { y: 300 },
+            debug: false,
+          },
+        },
+        parent: "game",
+        dom: {
+          createContainer: true,
+        },
+        scene: [Start, Game, GameOver, CutScene], //cenas DO JOGO
+      };
+      //cria um novo jogo Phaser com a configuração definida
+      var game = new Phaser.Game(config);
+      //Inicia a cena "Welcome" imediatamente.
+      this.game.scene.start("start"); // Reinicia a cena 'game'
+    </script>
+  </body>
+</html>
